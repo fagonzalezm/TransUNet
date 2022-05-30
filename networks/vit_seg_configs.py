@@ -1,5 +1,6 @@
 import ml_collections
 
+# Es usado por el que se usa por defecto
 def get_b16_config():
     """Returns the ViT-B/16 configuration."""
     config = ml_collections.ConfigDict()
@@ -15,7 +16,7 @@ def get_b16_config():
     config.classifier = 'seg'
     config.representation_size = None
     config.resnet_pretrained_path = None
-    config.pretrained_path = '../model/vit_checkpoint/imagenet21k/ViT-B_16.npz'
+    # config.pretrained_path = '../model/vit_checkpoint/imagenet21k/ViT-B_16.npz' # Pretrained
     config.patch_size = 16
 
     config.decoder_channels = (256, 128, 64, 16)
@@ -39,6 +40,7 @@ def get_testing():
     config.representation_size = None
     return config
 
+# Este es el que se usa por defecto
 def get_r50_b16_config():
     """Returns the Resnet50 + ViT-B/16 configuration."""
     config = get_b16_config()
@@ -48,7 +50,7 @@ def get_r50_b16_config():
     config.resnet.width_factor = 1
 
     config.classifier = 'seg'
-    config.pretrained_path = '../model/vit_checkpoint/imagenet21k/R50+ViT-B_16.npz'
+    # config.pretrained_path = '../model/vit_checkpoint/imagenet21k/R50+ViT-B_16.npz'
     config.decoder_channels = (256, 128, 64, 16)
     config.skip_channels = [512, 256, 64, 16]
     config.n_classes = 2

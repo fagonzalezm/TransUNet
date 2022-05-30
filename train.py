@@ -2,22 +2,23 @@ import argparse
 import logging
 import os
 import random
+from xmlrpc.client import Boolean
 import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
 from networks.vit_seg_modeling import VisionTransformer as ViT_seg
 from networks.vit_seg_modeling import CONFIGS as CONFIGS_ViT_seg
-from trainer import trainer_synapse
+from trainer import trainer_scian
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--root_path', type=str,
-                    default='../data/Synapse/train_npz', help='root dir for data')
+                    default='../data/SCIAN-SpermSegGS-Original/head_npz', help='root dir for data')
 parser.add_argument('--dataset', type=str,
-                    default='Synapse', help='experiment_name')
+                    default='SCIAN-SpermSegGS-Original', help='experiment_name')
 parser.add_argument('--list_dir', type=str,
-                    default='./lists/lists_Synapse', help='list dir')
+                    default='./lists/lists_SCIAN-SpermSegGS', help='list dir')
 parser.add_argument('--num_classes', type=int,
-                    default=9, help='output channel of network')
+                    default=2, help='output channel of network')
 parser.add_argument('--max_iterations', type=int,
                     default=30000, help='maximum epoch number to train')
 parser.add_argument('--max_epochs', type=int,
@@ -36,51 +37,67 @@ parser.add_argument('--seed', type=int,
 parser.add_argument('--n_skip', type=int,
                     default=3, help='using number of skip-connect, default is num')
 parser.add_argument('--vit_name', type=str,
-                    default='R50-ViT-B_16', help='select one vit model')
+                    default='R50+ViT-B_16', help='select one vit model')
 parser.add_argument('--vit_patches_size', type=int,
                     default=16, help='vit_patches_size, default is 16')
+parser.add_argument('--experiment', type=int,
+                    default=1, help='experiment, default is 1')
+parser.add_argument('--is_pretrain', type=int,
+                    default=0, help='is pretrain, default is 0')
 args = parser.parse_args()
 
 
 if __name__ == "__main__":
+    # Para asegurar reproducibilidad se debe experimentar con cudnn.deterministic true y cudnn.benchmark false
     if not args.deterministic:
-        cudnn.benchmark = True
-        cudnn.deterministic = False
+        cudnn.benchmark = True # Considera las características del hardware para elegir un algoritmo óptimo para las convoluciones con CUDA.
+        cudnn.deterministic = False # El algoritmo que use puede ser no determinista por sí solo. Con esta flag se usan algoritmos deterministas o la versión determinista de estos para la convolución usando CUDA.
     else:
         cudnn.benchmark = False
         cudnn.deterministic = True
 
+    #Se setean semillas
     random.seed(args.seed)
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
     torch.cuda.manual_seed(args.seed)
+
+    # Configuración de los valores estáticos
     dataset_name = args.dataset
     dataset_config = {
-        'Synapse': {
-            'root_path': '../data/Synapse/train_npz',
-            'list_dir': './lists/lists_Synapse',
-            'num_classes': 9,
+        'SCIAN-SpermSegGS-Original': {
+            'root_path': args.root_path,
+            'list_dir': './lists/lists_SCIAN-SpermSegGS-Original',
+            'num_classes': args.num_classes,
+            'is_pretrain': args.is_pretrain, # Pretrain (Solo cambia el nombre de los resultados)
+            'net_name': 'TransUnet',
+            'exp': args.experiment,
         },
     }
+
+    # Argumentos de entrada para la NN
     args.num_classes = dataset_config[dataset_name]['num_classes']
     args.root_path = dataset_config[dataset_name]['root_path']
-    args.list_dir = dataset_config[dataset_name]['list_dir']
-    args.is_pretrain = True
-    args.exp = 'TU_' + dataset_name + str(args.img_size)
-    snapshot_path = "../model/{}/{}".format(args.exp, 'TU')
+    args.list_dir = dataset_config[dataset_name]['list_dir'] + '/' + str(dataset_config[dataset_name]['exp'])
+    args.is_pretrain = dataset_config[dataset_name]['is_pretrain']
+    args.exp = dataset_name + '_exp' + str(dataset_config[dataset_name]['exp'])
+
+    # Path donde se guarda el modelo
+    snapshot_path = "../model/{}/{}".format(dataset_config[dataset_name]['net_name'], args.exp)
     snapshot_path = snapshot_path + '_pretrain' if args.is_pretrain else snapshot_path
     snapshot_path += '_' + args.vit_name
     snapshot_path = snapshot_path + '_skip' + str(args.n_skip)
-    snapshot_path = snapshot_path + '_vitpatch' + str(args.vit_patches_size) if args.vit_patches_size!=16 else snapshot_path
-    snapshot_path = snapshot_path+'_'+str(args.max_iterations)[0:2]+'k' if args.max_iterations != 30000 else snapshot_path
-    snapshot_path = snapshot_path + '_epo' +str(args.max_epochs) if args.max_epochs != 30 else snapshot_path
-    snapshot_path = snapshot_path+'_bs'+str(args.batch_size)
-    snapshot_path = snapshot_path + '_lr' + str(args.base_lr) if args.base_lr != 0.01 else snapshot_path
-    snapshot_path = snapshot_path + '_'+str(args.img_size)
-    snapshot_path = snapshot_path + '_s'+str(args.seed) if args.seed!=1234 else snapshot_path
+    snapshot_path = snapshot_path + '_vitPatchSize' + str(args.vit_patches_size) #if args.vit_patches_size!=16 else snapshot_path
+    snapshot_path = snapshot_path + '_maxIt' +str(args.max_iterations)[0:2]+'k' #if args.max_iterations != 30000 else snapshot_path
+    snapshot_path = snapshot_path + '_maxEpo' +str(args.max_epochs) #if args.max_epochs != 30 else snapshot_path
+    snapshot_path = snapshot_path + '_batchSize' +str(args.batch_size)
+    snapshot_path = snapshot_path + '_learningRate' + str(args.base_lr) #if args.base_lr != 0.01 else snapshot_path
+    snapshot_path = snapshot_path + '_imageSize' +str(args.img_size)
 
+    # Se crea el directorio si no existe
     if not os.path.exists(snapshot_path):
         os.makedirs(snapshot_path)
+    
     config_vit = CONFIGS_ViT_seg[args.vit_name]
     config_vit.n_classes = args.num_classes
     config_vit.n_skip = args.n_skip
@@ -89,5 +106,5 @@ if __name__ == "__main__":
     net = ViT_seg(config_vit, img_size=args.img_size, num_classes=config_vit.n_classes).cuda()
     net.load_from(weights=np.load(config_vit.pretrained_path))
 
-    trainer = {'Synapse': trainer_synapse,}
+    trainer = {'SCIAN-SpermSegGS-Original': trainer_scian,}
     trainer[dataset_name](args, net, snapshot_path)
