@@ -81,7 +81,7 @@ def trainer_scian(args, model, snapshot_path):
                 writer.add_image('train/GroundTruth', labs, iter_num)
 
         save_interval = 1  # int(max_epoch/6)
-        if epoch_num > int(max_epoch / 2) and (epoch_num + 1) % save_interval == 0:
+        if (epoch_num + 1) % save_interval == 0:
             save_mode_path = os.path.join(snapshot_path, 'epoch_' + str(epoch_num) + '.pth')
             torch.save(model.state_dict(), save_mode_path)
             logging.info("save model to {}".format(save_mode_path))
