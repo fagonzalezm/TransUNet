@@ -50,7 +50,7 @@ class Scian_dataset(Dataset):
     def __init__(self, base_dir, list_dir, split, transform=None):
         self.transform = transform  # using transform in torch!
         self.split = split
-        self.sample_list = open(os.path.join(list_dir, self.split+'.list')).readlines()
+        self.sample_list = open(os.path.join(list_dir, self.split)).readlines()
         self.data_dir = base_dir
 
     def __len__(self):
