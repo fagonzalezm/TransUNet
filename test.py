@@ -102,7 +102,7 @@ if __name__ == "__main__":
     args.list_dir = dataset_config[dataset_name]['list_dir']
     args.z_spacing = dataset_config[dataset_name]['z_spacing']
     # args.segmented_part = dataset_config[dataset_name]['segmented_part']
-    args.is_pretrain = True
+    args.is_pretrain = dataset_config[dataset_name]['is_pretrain']
 
     # name the same snapshot defined in train script!
     # args.exp = dataset_name + '_' + dataset_config[dataset_name]['segmented_part'] + '_exp' + str(dataset_config[dataset_name]['exp'])
