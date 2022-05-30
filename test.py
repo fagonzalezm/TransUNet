@@ -87,7 +87,7 @@ if __name__ == "__main__":
         'SCIAN-SpermSegGS-Original': {
             'Dataset': Scian_dataset,
             'root_path': args.root_path,
-            'list_dir': './lists/lists_SCIAN-SpermSegGS-Original',
+            'list_dir': args.list_dir,
             'num_classes': args.num_classes,
             'z_spacing': 1,
             'net_name': 'TransUnet',
