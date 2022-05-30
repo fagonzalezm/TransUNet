@@ -22,7 +22,7 @@ parser.add_argument('--dataset', type=str,
 parser.add_argument('--num_classes', type=int,
                     default=4, help='output channel of network')
 parser.add_argument('--list_dir', type=str,
-                    default='./lists/lists_SCIAN-SpermSegGS-Original', help='list dir')
+                    default='./lists', help='list dir')
 
 parser.add_argument('--max_iterations', type=int,default=20000, help='maximum epoch number to train')
 parser.add_argument('--max_epochs', type=int, default=30, help='maximum epoch number to train')
@@ -43,8 +43,8 @@ parser.add_argument('--experiment', type=int,
                     default=1, help='experiment, default is 1')
 parser.add_argument('--is_pretrain', type=int,
                     default=0, help='is pretrain, default is 0')
-parser.add_argument('--segmented_part', type=int,
-                    default='head', help='part to be segmented')
+# parser.add_argument('--segmented_part', type=int,
+#                     default='head', help='part to be segmented')
 args = parser.parse_args()
 
 
@@ -93,7 +93,6 @@ if __name__ == "__main__":
             'net_name': 'TransUnet',
             'is_pretrain': args.is_pretrain,
             'exp': args.experiment,
-            'segmented_part': args.segmented_part,
         },
     }
     dataset_name = args.dataset
@@ -102,11 +101,12 @@ if __name__ == "__main__":
     args.Dataset = dataset_config[dataset_name]['Dataset']
     args.list_dir = dataset_config[dataset_name]['list_dir']
     args.z_spacing = dataset_config[dataset_name]['z_spacing']
-    args.segmented_part = dataset_config[dataset_name]['segmented_part']
+    # args.segmented_part = dataset_config[dataset_name]['segmented_part']
     args.is_pretrain = True
 
     # name the same snapshot defined in train script!
-    args.exp = dataset_name + '_' + dataset_config[dataset_name]['segmented_part'] + '_exp' + str(dataset_config[dataset_name]['exp'])
+    # args.exp = dataset_name + '_' + dataset_config[dataset_name]['segmented_part'] + '_exp' + str(dataset_config[dataset_name]['exp'])
+    args.exp = dataset_name + '_exp' + str(dataset_config[dataset_name]['exp'])
     snapshot_path = "../model/{}/{}".format(dataset_config[dataset_name]['net_name'], args.exp)
     snapshot_path = snapshot_path + '_pretrain' if args.is_pretrain else snapshot_path
     snapshot_path += '_' + args.vit_name
