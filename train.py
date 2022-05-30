@@ -67,7 +67,7 @@ if __name__ == "__main__":
     dataset_config = {
         'SCIAN-SpermSegGS-Original': {
             'root_path': args.root_path,
-            'list_dir': './lists/lists_SCIAN-SpermSegGS-Original',
+            'list_dir': args.list_dir, # No cambiar
             'num_classes': args.num_classes,
             'is_pretrain': args.is_pretrain, # Pretrain (Solo cambia el nombre de los resultados)
             'net_name': 'TransUnet',
