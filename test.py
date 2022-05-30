@@ -20,7 +20,7 @@ parser.add_argument('--root_path', type=str,
 parser.add_argument('--dataset', type=str,
                     default='SCIAN-SpermSegGS-Original', help='experiment_name')
 parser.add_argument('--num_classes', type=int,
-                    default=4, help='output channel of network')
+                    default=2, help='output channel of network')
 parser.add_argument('--list_dir', type=str,
                     default='./lists', help='list dir')
 
