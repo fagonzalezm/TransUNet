@@ -49,8 +49,10 @@ args = parser.parse_args()
 
 
 def inference(args, model, test_save_path=None):
-    db_test = args.Dataset(base_dir=args.root_path, split="test", list_dir=args.list_dir + '/' + str(args.experiment))
-    testloader = DataLoader(db_test, batch_size=1, shuffle=False, num_workers=1)
+    db_test = args.Dataset(base_dir=args.root_path, split="test", list_dir=args.list_dir)
+    def worker_init_fn(worker_id):
+        random.seed(args.seed + worker_id)
+    testloader = DataLoader(db_test, batch_size=args.batch_size, shuffle=False, num_workers=8, worker_init_fn=worker_init_fn)
     logging.info("{} test iterations per epoch".format(len(testloader)))
     model.eval()
     metric_list = 0.0
@@ -100,7 +102,7 @@ if __name__ == "__main__":
     args.num_classes = dataset_config[dataset_name]['num_classes']
     args.root_path = dataset_config[dataset_name]['root_path']
     args.Dataset = dataset_config[dataset_name]['Dataset']
-    args.list_dir = dataset_config[dataset_name]['list_dir']
+    args.list_dir = dataset_config[dataset_name]['list_dir'] + '/' + str(dataset_config[dataset_name]['exp'])
     args.z_spacing = dataset_config[dataset_name]['z_spacing']
     # args.segmented_part = dataset_config[dataset_name]['segmented_part']
     args.is_pretrain = dataset_config[dataset_name]['is_pretrain']
@@ -134,7 +136,7 @@ if __name__ == "__main__":
 
     log_folder = './test_log/test_log_' + args.exp
     os.makedirs(log_folder, exist_ok=True)
-    logging.basicConfig(filename=log_folder + '/'+snapshot_name+".txt", level=logging.INFO, format='[%(asctime)s.%(msecs)03d] %(message)s', datefmt='%H:%M:%S')
+    logging.basicConfig(filename=snapshot_path + "/logTest.txt", level=logging.INFO, format='[%(asctime)s.%(msecs)03d] %(message)s', datefmt='%H:%M:%S')
     logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
     logging.info(str(args))
     logging.info(snapshot_name)

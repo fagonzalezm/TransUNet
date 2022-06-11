@@ -17,7 +17,7 @@ from torchvision import transforms
 
 def trainer_scian(args, model, snapshot_path):
     from datasets.dataset_scian import Scian_dataset, RandomGenerator
-    logging.basicConfig(filename=snapshot_path + "/log.txt", level=logging.INFO,
+    logging.basicConfig(filename=snapshot_path + "/logTrain.txt", level=logging.INFO,
                         format='[%(asctime)s.%(msecs)03d] %(message)s', datefmt='%H:%M:%S')
     logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
     logging.info(str(args))
@@ -59,12 +59,12 @@ def trainer_scian(args, model, snapshot_path):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            lr_ = base_lr * (1.0 - iter_num / max_iterations) ** 0.9 # Comentar(?)
-            for param_group in optimizer.param_groups:               # Comentar(?)
-                param_group['lr'] = lr_                              # Comentar(?)
+            # lr_ = base_lr * (1.0 - iter_num / max_iterations) ** 0.9 # Comentar(?)
+            # for param_group in optimizer.param_groups:               # Comentar(?)
+            #     param_group['lr'] = lr_                              # Comentar(?)
 
             iter_num = iter_num + 1
-            writer.add_scalar('info/lr', lr_, iter_num)
+            # writer.add_scalar('info/lr', lr_, iter_num)
             writer.add_scalar('info/total_loss', loss, iter_num)
             writer.add_scalar('info/loss_ce', loss_ce, iter_num)
 
