@@ -50,9 +50,7 @@ args = parser.parse_args()
 
 def inference(args, model, test_save_path=None):
     db_test = args.Dataset(base_dir=args.root_path, split="test", list_dir=args.list_dir)
-    def worker_init_fn(worker_id):
-        random.seed(args.seed + worker_id)
-    testloader = DataLoader(db_test, batch_size=args.batch_size, shuffle=False, num_workers=8, worker_init_fn=worker_init_fn)
+    testloader = DataLoader(db_test, batch_size=1, shuffle=False, num_workers=1)
     logging.info("{} test iterations per epoch".format(len(testloader)))
     model.eval()
     metric_list = 0.0
