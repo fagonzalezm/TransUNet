@@ -135,7 +135,7 @@ def test_single_volume(image, label, net, classes, patch_size=[256, 256], test_s
                 prediction[ind] = pred
     else:
         x, y = image.shape[0], image.shape[1]
-        if x != patch_size[0] or y != patch_size[1]:
+        if (need_zoom is not None) and x != patch_size[0] or y != patch_size[1]:
             image = zoom(image, (patch_size[0] / x, patch_size[1] / y), order=3)  # previous using 0
         input = torch.from_numpy(image).unsqueeze(
             0).unsqueeze(0).float().cuda()
