@@ -106,6 +106,7 @@ def calculate_metric_percase(pred, gt):
         true_positive_rate = metric.binary.true_positive_rate(pred, gt)
         f1 = 2*precision*recall/(precision+recall+0.00001)
         accuracy_metric = accuracy(pred,gt)
+        print(accuracy_metric)
         return dice, hd95, jc, precision, recall, sensitivity, specificity, true_negative_rate, true_positive_rate, f1, accuracy_metric
     elif pred.sum() > 0 and gt.sum()==0:
         return 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
