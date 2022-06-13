@@ -48,9 +48,8 @@ def trainer_scian(args, model, snapshot_path):
     db_train = Scian_dataset(base_dir=args.root_path, list_dir=args.list_dir, split="train",
                                transform=transforms.Compose(
                                    [RandomGenerator(output_size=[args.img_size, args.img_size])]))
-    db_val = Scian_dataset(base_dir=args.root_path, list_dir=args.list_dir, split="validation",
-                               transform=transforms.Compose(
-                                   [RandomGenerator(output_size=[args.img_size, args.img_size])]))
+    db_train2 = Scian_dataset(base_dir=args.root_path, list_dir=args.list_dir, split="train")                    
+    db_val = Scian_dataset(base_dir=args.root_path, list_dir=args.list_dir, split="validation")
     print("The length of train set is: {}".format(len(db_train))) #Aquí con RandomGenerator se aumentan los datos
 
     def worker_init_fn(worker_id):
@@ -58,7 +57,7 @@ def trainer_scian(args, model, snapshot_path):
 
     trainloader = DataLoader(db_train, batch_size=batch_size, shuffle=True, num_workers=8, pin_memory=True,
                              worker_init_fn=worker_init_fn)
-    trainloader2 = DataLoader(db_train, batch_size=1, shuffle=False, num_workers=1, pin_memory=True)
+    trainloader2 = DataLoader(db_train2, batch_size=1, shuffle=False, num_workers=1, pin_memory=True)
     valloader = DataLoader(db_val, batch_size=1, shuffle=False, num_workers=1, pin_memory=True)
     if args.n_gpu > 1:
         model = nn.DataParallel(model)
@@ -121,8 +120,8 @@ def trainer_scian(args, model, snapshot_path):
             logging.info("save model to {}".format(save_mode_path))
             iterator.close()
             break
-        metric_train = inference(args, model, trainloader2)
-        metric_val = inference(args, model, valloader)
+        metric_train = inference(args, model, trainloader2, need_zoom=1)
+        metric_val = inference(args, model, valloader, need_zoom=1)
         writer.add_scalar('train/dice', metric_train[0], epoch_num)
         writer.add_scalar('train/hd95', metric_train[1], epoch_num)
         writer.add_scalar('train/jaccard', metric_train[2], epoch_num)
