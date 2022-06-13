@@ -24,7 +24,7 @@ def inference(args, model,testloader, test_save_path=None):
 
         # h, w = sampled_batch["image"].size()[2:]
         image, label, case_name = sampled_batch["image"], sampled_batch["label"], sampled_batch['case_name'][0]
-        metric_i = test_single_volume(image, label, model, classes=args.num_classes, patch_size=[args.img_size, args.img_size], case=case_name)
+        metric_i = test_single_volume(image, label, model, classes=args.num_classes, patch_size=[args.img_size, args.img_size], case=case_name, need_zoom=1)
         metric_list += np.array(metric_i)
         logging.info('idx %d case %s mean_dice %f mean_hd95 %f' % (i_batch, case_name, np.mean(metric_i, axis=0)[0], np.mean(metric_i, axis=0)[1]))
     metric_list_norm = metric_list / len(metric_list[0])
@@ -120,8 +120,8 @@ def trainer_scian(args, model, snapshot_path):
             logging.info("save model to {}".format(save_mode_path))
             iterator.close()
             break
-        metric_train = inference(args, model, trainloader2, need_zoom=1)
-        metric_val = inference(args, model, valloader, need_zoom=1)
+        metric_train = inference(args, model, trainloader2)
+        metric_val = inference(args, model, valloader)
         writer.add_scalar('train/dice', metric_train[0], epoch_num)
         writer.add_scalar('train/hd95', metric_train[1], epoch_num)
         writer.add_scalar('train/jaccard', metric_train[2], epoch_num)
