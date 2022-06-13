@@ -6,6 +6,40 @@ import torch.nn as nn
 import SimpleITK as sitk
 
 
+def l1_reg(model):
+  """
+  This function calculates the l1 norm of the all the tensors in the model
+  Args:
+    model: nn.module
+      Neural network instance
+  Returns:
+    l1: float
+      L1 norm of the all the tensors in the model
+  """
+  l1 = 0.0
+
+  for param in model.parameters():
+    l1 += torch.sum(torch.abs(param))
+
+  return l1
+
+def l2_reg(model):
+  """
+  This function calculates the l2 norm of the all the tensors in the model
+  Args:
+    model: nn.module
+      Neural network instance
+  Returns:
+    l2: float
+      L2 norm of the all the tensors in the model
+  """
+
+  l2 = 0.0
+  for param in model.parameters():
+    l2 += torch.sum(torch.abs(param)**2)
+
+  return l2
+
 class DiceLoss(nn.Module):
     def __init__(self, n_classes):
         super(DiceLoss, self).__init__()
@@ -44,6 +78,18 @@ class DiceLoss(nn.Module):
             loss += dice * weight[i]
         return loss / self.n_classes
 
+def accuracy(result, reference):
+    result = np.atleast_1d(result.astype(np.bool))
+    reference = np.atleast_1d(reference.astype(np.bool))
+    tp = np.count_nonzero(result & reference)
+    tn = np.count_nonzero(~result & ~reference)
+    fp = np.count_nonzero(result & ~reference)
+    fn = np.count_nonzero(~result & reference)
+    try:
+        acc = float(tp + tn) / float(tp + tn + fp + fn)
+    except ZeroDivisionError:
+        acc = 0.0
+    return acc
 
 def calculate_metric_percase(pred, gt):
     pred[pred > 0] = 1
@@ -51,11 +97,20 @@ def calculate_metric_percase(pred, gt):
     if pred.sum() > 0 and gt.sum()>0:
         dice = metric.binary.dc(pred, gt)
         hd95 = metric.binary.hd95(pred, gt)
-        return dice, hd95
+        jc = metric.binary.jc(pred, gt)
+        precision = metric.binary.precision(pred, gt)
+        recall = metric.binary.recall(pred, gt)
+        sensitivity = metric.binary.sensitivity(pred, gt)
+        specificity = metric.binary.specificity(pred, gt)
+        true_negative_rate = metric.binary.true_negative_rate(pred, gt)
+        true_positive_rate = metric.binary.true_positive_rate(pred, gt)
+        f1 = 2*precision*recall/(precision+recall+0.00001)
+        accuracy_metric = accuracy(pred,gt)
+        return dice, hd95, jc, precision, recall, sensitivity, specificity, true_negative_rate, true_positive_rate, f1, accuracy_metric
     elif pred.sum() > 0 and gt.sum()==0:
-        return 1, 0
+        return 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     else:
-        return 0, 0
+        return 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 
 def test_single_volume(image, label, net, classes, patch_size=[256, 256], test_save_path=None, case=None, z_spacing=1):
