@@ -58,8 +58,8 @@ def trainer_scian(args, model, snapshot_path):
 
     trainloader = DataLoader(db_train, batch_size=batch_size, shuffle=True, num_workers=8, pin_memory=True,
                              worker_init_fn=worker_init_fn)
-    valloader = DataLoader(db_val, batch_size=batch_size, shuffle=False, num_workers=8, pin_memory=True,
-                             worker_init_fn=worker_init_fn)
+    trainloader2 = DataLoader(db_train, batch_size=1, shuffle=False, num_workers=1, pin_memory=True)
+    valloader = DataLoader(db_val, batch_size=1, shuffle=False, num_workers=1, pin_memory=True)
     if args.n_gpu > 1:
         model = nn.DataParallel(model)
     ce_loss = CrossEntropyLoss()
@@ -121,7 +121,7 @@ def trainer_scian(args, model, snapshot_path):
             logging.info("save model to {}".format(save_mode_path))
             iterator.close()
             break
-        metric_train = inference(args, model, trainloader)
+        metric_train = inference(args, model, trainloader2)
         metric_val = inference(args, model, valloader)
         writer.add_scalar('train/dice', metric_train[0], epoch_num)
         writer.add_scalar('train/hd95', metric_train[1], epoch_num)
