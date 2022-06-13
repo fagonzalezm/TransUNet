@@ -113,14 +113,14 @@ def calculate_metric_percase(pred, gt):
         return 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 
-def test_single_volume(image, label, net, classes, patch_size=[256, 256], test_save_path=None, case=None, z_spacing=1):
+def test_single_volume(image, label, net, classes, patch_size=[256, 256], test_save_path=None, case=None, z_spacing=1, need_zoom=None):
     image, label = image.squeeze(0).cpu().detach().numpy(), label.squeeze(0).cpu().detach().numpy()
     if len(image.shape) == 3:
         prediction = np.zeros_like(label)
         for ind in range(image.shape[0]):
             slice = image[ind, :, :]
             x, y = slice.shape[0], slice.shape[1]
-            if x != patch_size[0] or y != patch_size[1]:
+            if (need_zoom is not None) and x != patch_size[0] or y != patch_size[1]:
                 slice = zoom(slice, (patch_size[0] / x, patch_size[1] / y), order=3)  # previous using 0
             input = torch.from_numpy(slice).unsqueeze(0).unsqueeze(0).float().cuda()
             net.eval()
