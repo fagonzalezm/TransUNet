@@ -122,6 +122,7 @@ def trainer_scian(args, model, snapshot_path):
             break
         metric_train = inference(args, model, trainloader2)
         metric_val = inference(args, model, valloader)
+        print(metric_train[0])
         writer.add_scalar('train/dice', metric_train[0], epoch_num)
         writer.add_scalar('train/hd95', metric_train[1], epoch_num)
         writer.add_scalar('train/jaccard', metric_train[2], epoch_num)
