@@ -121,6 +121,7 @@ def trainer_scian(args, model, snapshot_path):
             iterator.close()
             break
         metric_train = inference(args, model, trainloader2)
+        print(metric_train)
         metric_val = inference(args, model, valloader)
         writer.add_scalar('train/dice', np.mean(metric_train, axis=0)[0], epoch_num)
         writer.add_scalar('train/hd95', np.mean(metric_train, axis=0)[1], epoch_num)
