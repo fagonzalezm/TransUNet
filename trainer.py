@@ -16,8 +16,9 @@ from utils import DiceLoss
 from torchvision import transforms
 from utils import test_single_volume
 
-def inference(args, model,testloader, test_save_path=None):
+def inference(args, model,db, test_save_path=None):
     # logging.info("{} test iterations per epoch".format(len(testloader)))
+    testloader = DataLoader(db, batch_size=1, shuffle=False, num_workers=1)
     model.eval()
     metric_list = 0.0
     for i_batch, sampled_batch in tqdm(enumerate(testloader)):
@@ -26,6 +27,7 @@ def inference(args, model,testloader, test_save_path=None):
         image, label, case_name = sampled_batch["image"], sampled_batch["label"], sampled_batch['case_name'][0]
         metric_i = test_single_volume(image, label, model, classes=args.num_classes, patch_size=[args.img_size, args.img_size], case=case_name, need_zoom=1)
         metric_list += np.array(metric_i)
+    metric_list = metric_list / len(db)
         # logging.info('idx %d case %s mean_dice %f mean_hd95 %f' % (i_batch, case_name, np.mean(metric_i, axis=0)[0], np.mean(metric_i, axis=0)[1]))
     # metric_list_norm = metric_list / len(metric_list[:][0])
     # for i in range(1, args.num_classes):
@@ -57,8 +59,8 @@ def trainer_scian(args, model, snapshot_path):
 
     trainloader = DataLoader(db_train, batch_size=batch_size, shuffle=True, num_workers=8, pin_memory=True,
                              worker_init_fn=worker_init_fn)
-    trainloader2 = DataLoader(db_train2, batch_size=1, shuffle=False, num_workers=1, pin_memory=True)
-    valloader = DataLoader(db_val, batch_size=1, shuffle=False, num_workers=1, pin_memory=True)
+    # trainloader2 = DataLoader(db_train2, batch_size=1, shuffle=False, num_workers=1, pin_memory=True)
+    # valloader = DataLoader(db_val, batch_size=1, shuffle=False, num_workers=1, pin_memory=True)
     if args.n_gpu > 1:
         model = nn.DataParallel(model)
     ce_loss = CrossEntropyLoss()
@@ -120,9 +122,9 @@ def trainer_scian(args, model, snapshot_path):
             logging.info("save model to {}".format(save_mode_path))
             iterator.close()
             break
-        metric_train = inference(args, model, trainloader2)
+        metric_train = inference(args, model, db_train2)
         print(metric_train)
-        metric_val = inference(args, model, valloader)
+        metric_val = inference(args, model, db_val)
         writer.add_scalar('train/dice', np.mean(metric_train, axis=0)[0], epoch_num)
         writer.add_scalar('train/hd95', np.mean(metric_train, axis=0)[1], epoch_num)
         writer.add_scalar('train/jaccard', np.mean(metric_train, axis=0)[2], epoch_num)
