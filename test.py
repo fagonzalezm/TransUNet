@@ -13,6 +13,7 @@ from datasets.dataset_scian import Scian_dataset
 from utils import test_single_volume
 from networks.vit_seg_modeling import VisionTransformer as ViT_seg
 from networks.vit_seg_modeling import CONFIGS as CONFIGS_ViT_seg
+from tensorboardX import SummaryWriter
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--root_path', type=str,
@@ -25,7 +26,7 @@ parser.add_argument('--list_dir', type=str,
                     default='./lists', help='list dir')
 
 parser.add_argument('--max_iterations', type=int,default=30000, help='maximum epoch number to train')
-parser.add_argument('--max_epochs', type=int, default=30, help='maximum epoch number to train')
+parser.add_argument('--max_epochs', type=int, default=150, help='maximum epoch number to train')
 parser.add_argument('--batch_size', type=int, default=24,
                     help='batch_size per gpu')
 parser.add_argument('--img_size', type=int, default=224, help='input patch size of network input')
@@ -51,6 +52,7 @@ args = parser.parse_args()
 def inference(args, model, test_save_path=None):
     db_test = args.Dataset(base_dir=args.root_path, split="test", list_dir=args.list_dir)
     testloader = DataLoader(db_test, batch_size=1, shuffle=False, num_workers=1)
+
     logging.info("{} test iterations per epoch".format(len(testloader)))
     model.eval()
     metric_list = 0.0
@@ -123,6 +125,7 @@ if __name__ == "__main__":
     config_vit.n_classes = args.num_classes
     config_vit.n_skip = args.n_skip
     config_vit.patches.size = (args.vit_patches_size, args.vit_patches_size)
+    writer = SummaryWriter( '../tensorflow/' + "TransUnet" + args.vit_name+ '_skip' + str(args.n_skip) + '_vitPatchSize' + str(args.vit_patches_size)+ '_maxIt' +str(args.max_iterations)[0:2]+'k'+ '_maxEpo' +str(args.max_epochs) + '_batchSize' +str(args.batch_size)+ '_learningRate' + str(args.base_lr) + '_imageSize' +str(args.img_size)+ "/" + args.exp)
     if args.vit_name.find('R50') !=-1:
         config_vit.patches.grid = (int(args.img_size/args.vit_patches_size), int(args.img_size/args.vit_patches_size))
     net = ViT_seg(config_vit, img_size=args.img_size, num_classes=config_vit.n_classes).cuda()
@@ -145,6 +148,17 @@ if __name__ == "__main__":
         os.makedirs(test_save_path, exist_ok=True)
     else:
         test_save_path = None
-    inference(args, net, test_save_path)
-
+    metric_test = inference(args, net, test_save_path)
+    writer.add_scalar('test/dice', np.mean(metric_test, axis=0)[0], 0)
+    writer.add_scalar('test/hd95', np.mean(metric_test, axis=0)[1], 0)
+    writer.add_scalar('test/jaccard', np.mean(metric_test, axis=0)[2], 0)
+    writer.add_scalar('test/precision', np.mean(metric_test, axis=0)[3], 0)
+    writer.add_scalar('test/recall', np.mean(metric_test, axis=0)[4], 0)
+    writer.add_scalar('test/sensitivity', np.mean(metric_test, axis=0)[5], 0)
+    writer.add_scalar('test/specificity', np.mean(metric_test, axis=0)[6], 0)
+    writer.add_scalar('test/true_negative_rate', np.mean(metric_test, axis=0)[7], 0)
+    writer.add_scalar('test/true_positive_rate', np.mean(metric_test, axis=0)[8], 0)
+    writer.add_scalar('test/f1', np.mean(metric_test, axis=0)[9], 0)
+    writer.add_scalar('test/accuracy', np.mean(metric_test, axis=0)[10], 0)
+    writer.close()
 
