@@ -78,39 +78,65 @@ class DiceLoss(nn.Module):
             loss += dice * weight[i]
         return loss / self.n_classes
 
-def accuracy(result, reference):
-    result = np.atleast_1d(result.astype(np.bool))
-    reference = np.atleast_1d(reference.astype(np.bool))
-    tp = np.count_nonzero(result & reference)
-    tn = np.count_nonzero(~result & ~reference)
-    fp = np.count_nonzero(result & ~reference)
-    fn = np.count_nonzero(~result & reference)
-    try:
-        acc = float(tp + tn) / float(tp + tn + fp + fn)
-    except ZeroDivisionError:
-        acc = 0.0
-    return acc
+# def accuracy(result, reference):
+#     result = np.atleast_1d(result.astype(np.bool))
+#     reference = np.atleast_1d(reference.astype(np.bool))
+#     tp = np.count_nonzero(result & reference)
+#     tn = np.count_nonzero(~result & ~reference)
+#     fp = np.count_nonzero(result & ~reference)
+#     fn = np.count_nonzero(~result & reference)
+#     try:
+#         acc = float(tp + tn) / float(tp + tn + fp + fn)
+#     except ZeroDivisionError:
+#         acc = 0.0
+#     return acc
 
 def calculate_metric_percase(pred, gt):
     pred[pred > 0] = 1
     gt[gt > 0] = 1
     if pred.sum() > 0 and gt.sum()>0:
-        dice = metric.binary.dc(pred, gt)
+        smooth = 1e-6
+        result = np.atleast_1d(result.astype(np.bool))
+        reference = np.atleast_1d(reference.astype(np.bool))
+        tp = np.count_nonzero(result & reference)
+        tn = np.count_nonzero(~result & ~reference)
+        fp = np.count_nonzero(result & ~reference)
+        fn = np.count_nonzero(~result & reference)
+        intersection = np.count_nonzero(result & reference)
+        union = np.count_nonzero(result | reference)
+
+        # Dice
+        size_i1 = np.count_nonzero(result)
+        size_i2 = np.count_nonzero(reference)
+        dice = 2. * intersection / float(size_i1 + size_i2 + smooth)
+
+        # HD95
         hd95 = metric.binary.hd95(pred, gt)
-        jc = metric.binary.jc(pred, gt)
-        precision = metric.binary.precision(pred, gt)
-        recall = metric.binary.recall(pred, gt)
-        sensitivity = metric.binary.sensitivity(pred, gt)
-        specificity = metric.binary.specificity(pred, gt)
-        true_negative_rate = metric.binary.true_negative_rate(pred, gt)
-        true_positive_rate = metric.binary.true_positive_rate(pred, gt)
-        f1 = 2*precision*recall/(precision+recall+0.00001)
-        accuracy_metric = accuracy(pred,gt)
-        return dice, hd95, jc, precision, recall, sensitivity, specificity, true_negative_rate, true_positive_rate, f1, accuracy_metric
+
+        # Jaccard
+        jc = float(intersection) / float(union + smooth)
+
+        # Precision
+        precision = tp / float(tp + fp + smooth)
+
+        # Recall
+        recall = tp / float(tp + fn + smooth)
+
+        # Specificity
+        specificity = tn / float(tn + fp + smooth)
+
+        # F1
+        f1 = 2*precision*recall/(precision+recall+smooth)
+
+        # Accuracy
+        accuracy = float(tp + tn) / float(tp + tn + fp + fn + smooth)
+
+        return dice, hd95, jc, precision, recall, specificity, f1, accuracy
+
     elif pred.sum() > 0 and gt.sum()==0:
-        return 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        return 1., 0., 0., 0., 0., 0., 0., 0.
     else:
-        return 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        return 0., 0., 0., 0., 0., 0., 0., 0.
 
 
 def test_single_volume(image, label, net, classes, patch_size=[256, 256], test_save_path=None, case=None, z_spacing=1, need_zoom=None):

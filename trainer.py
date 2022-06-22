@@ -130,26 +130,17 @@ def trainer_scian(args, model, snapshot_path):
         writer.add_scalar('train/jaccard', np.mean(metric_train, axis=0)[2], epoch_num)
         writer.add_scalar('train/precision', np.mean(metric_train, axis=0)[3], epoch_num)
         writer.add_scalar('train/recall', np.mean(metric_train, axis=0)[4], epoch_num)
-        writer.add_scalar('train/sensitivity', np.mean(metric_train, axis=0)[5], epoch_num)
-        writer.add_scalar('train/specificity', np.mean(metric_train, axis=0)[6], epoch_num)
-        writer.add_scalar('train/true_negative_rate', np.mean(metric_train, axis=0)[7], epoch_num)
-        writer.add_scalar('train/true_positive_rate', np.mean(metric_train, axis=0)[8], epoch_num)
-        writer.add_scalar('train/f1', np.mean(metric_train, axis=0)[9], epoch_num)
-        writer.add_scalar('train/accuracy', np.mean(metric_train, axis=0)[10], epoch_num)
+        writer.add_scalar('train/specificity', np.mean(metric_train, axis=0)[5], epoch_num)
+        writer.add_scalar('train/f1', np.mean(metric_train, axis=0)[6], epoch_num)
+        writer.add_scalar('train/accuracy', np.mean(metric_train, axis=0)[7], epoch_num)
 
         writer.add_scalar('val/dice', np.mean(metric_val, axis=0)[0], epoch_num)
         writer.add_scalar('val/hd95', np.mean(metric_val, axis=0)[1], epoch_num)
         writer.add_scalar('val/jaccard', np.mean(metric_val, axis=0)[2], epoch_num)
         writer.add_scalar('val/precision', np.mean(metric_val, axis=0)[3], epoch_num)
         writer.add_scalar('val/recall', np.mean(metric_val, axis=0)[4], epoch_num)
-        writer.add_scalar('val/sensitivity', np.mean(metric_val, axis=0)[5], epoch_num)
-        writer.add_scalar('val/specificity', np.mean(metric_val, axis=0)[6], epoch_num)
-        writer.add_scalar('val/true_negative_rate', np.mean(metric_val, axis=0)[7], epoch_num)
-        writer.add_scalar('val/true_positive_rate', np.mean(metric_val, axis=0)[8], epoch_num)
-        writer.add_scalar('val/f1', np.mean(metric_val, axis=0)[9], epoch_num)
-        writer.add_scalar('val/accuracy', np.mean(metric_val, axis=0)[10], epoch_num)
-
-
-
+        writer.add_scalar('val/specificity', np.mean(metric_val, axis=0)[5], epoch_num)
+        writer.add_scalar('val/f1', np.mean(metric_val, axis=0)[6], epoch_num)
+        writer.add_scalar('val/accuracy', np.mean(metric_val, axis=0)[7], epoch_num)
     writer.close()
     return "Training Finished!"
