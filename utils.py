@@ -96,8 +96,8 @@ def calculate_metric_percase(pred, gt):
     gt[gt > 0] = 1
     if pred.sum() > 0 and gt.sum()>0:
         smooth = 1e-6
-        result = np.atleast_1d(result.astype(np.bool))
-        reference = np.atleast_1d(reference.astype(np.bool))
+        result = np.atleast_1d(pred.astype(np.bool))
+        reference = np.atleast_1d(gt.astype(np.bool))
         tp = np.count_nonzero(result & reference)
         tn = np.count_nonzero(~result & ~reference)
         fp = np.count_nonzero(result & ~reference)
