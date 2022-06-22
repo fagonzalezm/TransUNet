@@ -65,7 +65,8 @@ def trainer_scian(args, model, snapshot_path):
         model = nn.DataParallel(model)
     ce_loss = CrossEntropyLoss()
     dice_loss = DiceLoss(num_classes)
-    optimizer = optim.SGD(model.parameters(), lr=base_lr, momentum=0.9, weight_decay=0.0001) #Aquí se define el optimizador
+    # optimizer = optim.SGD(model.parameters(), lr=base_lr, momentum=0.9, weight_decay=0.0001) #Aquí se define el optimizador
+    optimizer = optim.SGD(model.parameters(), lr=base_lr) #SGD original sin momentum ni l2
     writer = SummaryWriter( '../tensorflow/' + "TransUnet" + args.vit_name+ '_skip' + str(args.n_skip) + '_vitPatchSize' + str(args.vit_patches_size)+ '_maxIt' +str(args.max_iterations)[0:2]+'k'+ '_maxEpo' +str(args.max_epochs) + '_batchSize' +str(args.batch_size)+ '_learningRate' + str(args.base_lr) + '_imageSize' +str(args.img_size)+ "/" + args.exp)
     iter_num = 0
     max_epoch = args.max_epochs
