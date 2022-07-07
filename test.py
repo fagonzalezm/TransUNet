@@ -70,7 +70,7 @@ def inference(args, model, test_save_path=None):
     performance = np.mean(metric_list, axis=0)[0]
     mean_hd95 = np.mean(metric_list, axis=0)[1]
     logging.info('Testing performance in best val model: mean_dice : %f mean_hd95 : %f' % (performance, mean_hd95))
-    return "Testing Finished!"
+    return metric_list
 
 
 if __name__ == "__main__":
